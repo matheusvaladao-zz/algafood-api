@@ -20,18 +20,22 @@ import javax.persistence.OneToMany;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.algaworks.algafood.Groups;
+import com.algaworks.algafood.core.validation.Groups;
+import com.algaworks.algafood.core.validation.TaxaFrete;
+import com.algaworks.algafood.core.validation.ValorZeroIncluiDescricao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+@ValorZeroIncluiDescricao(valorField = "taxaFrete", descricacaoField = "nome", descricacaoObrigatoria = "Frete Grátis")
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
@@ -42,14 +46,17 @@ public class Restaurante {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank(groups = Groups.CadastroRestaurante.class)
+	@NotBlank
 	private String nome;
 
-	@PositiveOrZero(groups = Groups.CadastroRestaurante.class)
+	@NotNull
+//	@PositiveOrZero(message = "{TaxaFrete.invalida}")
+	@TaxaFrete
 	private BigDecimal taxaFrete;
 
 	@Valid
-	@NotNull(groups = Groups.CadastroRestaurante.class)
+	@ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
+	@NotNull
 	@JsonIgnoreProperties("hibernateLazyInitializer")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "cozinha_id", nullable = false)
