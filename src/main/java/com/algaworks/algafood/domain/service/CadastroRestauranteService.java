@@ -1,5 +1,7 @@
 package com.algaworks.algafood.domain.service;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import com.algaworks.algafood.domain.model.Cidade;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.model.FormaPagamento;
 import com.algaworks.algafood.domain.model.Restaurante;
+import com.algaworks.algafood.domain.model.Usuario;
 import com.algaworks.algafood.domain.repository.RestauranteRepository;
 
 @Service
@@ -26,6 +29,9 @@ public class CadastroRestauranteService {
 	
 	@Autowired
 	private CadastroFormaPagamentoService cadastroFormaPagamentoService;
+	
+	@Autowired
+	private CadastroUsuarioService cadastroUsuario;
 
 	@Transactional
 	public Restaurante salvar(Restaurante restaurante) {
@@ -53,6 +59,25 @@ public class CadastroRestauranteService {
 	}
 	
 	@Transactional
+	public void ativar(List<Long> restauranteIds) {
+		restauranteIds.forEach(this::ativar);
+		
+	}
+	
+	@Transactional
+	public void inativar(Long restauranteId) {
+		Restaurante restaurante = buscarOuFalhar(restauranteId);
+		restaurante.inativar();
+		
+	}
+	
+	@Transactional
+	public void inativar(List<Long> restauranteIds) {
+		restauranteIds.forEach(this::inativar);
+		
+	}
+	
+	@Transactional
 	public void desassociarFormaPagamento(Long restauranteId, Long formaPagamentoId) {
 		Restaurante restaurante = buscarOuFalhar(restauranteId);
 		FormaPagamento formaPagamento = cadastroFormaPagamentoService.buscarOuFalhar(formaPagamentoId);
@@ -69,10 +94,33 @@ public class CadastroRestauranteService {
 	}
 	
 	@Transactional
-	public void inativar(Long restauranteId) {
-		Restaurante restaurante = buscarOuFalhar(restauranteId);
-		restaurante.inativar();
-		
+	public void abrir(Long restauranteId) {
+	    Restaurante restauranteAtual = buscarOuFalhar(restauranteId);
+	    
+	    restauranteAtual.abrir();
+	}
+
+	@Transactional
+	public void fechar(Long restauranteId) {
+	    Restaurante restauranteAtual = buscarOuFalhar(restauranteId);
+	    
+	    restauranteAtual.fechar();
+	} 
+	
+	@Transactional
+	public void desassociarResponsavel(Long restauranteId, Long usuarioId) {
+	    Restaurante restaurante = buscarOuFalhar(restauranteId);
+	    Usuario usuario = cadastroUsuario.buscarOuFalhar(usuarioId);
+	    
+	    restaurante.removerResponsavel(usuario);
+	}
+
+	@Transactional
+	public void associarResponsavel(Long restauranteId, Long usuarioId) {
+	    Restaurante restaurante = buscarOuFalhar(restauranteId);
+	    Usuario usuario = cadastroUsuario.buscarOuFalhar(usuarioId);
+	    
+	    restaurante.adicionarResponsavel(usuario);
 	}
 
 }
